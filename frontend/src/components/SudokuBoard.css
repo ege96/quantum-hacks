@@ -3,44 +3,64 @@
   grid-template-rows: repeat(9, 1fr);
   width: 600px;
   height: 600px;
-  border: 2px solid #333;
+  /* Remove border from board - handle with cell borders */
+  border: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   background-color: #f5f5f5;
   margin: 0 auto;
+  /* Remove box-sizing as it's not needed without board border */
 }
 
 .sudoku-row {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  border-bottom: 1px solid #ccc;
-}
-
-.sudoku-row:nth-child(3n) {
-  border-bottom: 2px solid #333;
-}
-
-.sudoku-row:last-child {
-  border-bottom: none;
 }
 
 .sudoku-cell {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-right: 1px solid #ccc;
+  position: relative;
   cursor: pointer;
   font-family: 'Arial', sans-serif;
   transition: background-color 0.2s;
-  position: relative;
   user-select: none;
+  border: none; /* Start clean */
+
+  /* Default thin internal borders */
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 
+/* Thick Top Border for the first row */
+.sudoku-row:first-child .sudoku-cell {
+  border-top: 2px solid #333;
+}
+
+/* Thick Left Border for the first column */
+.sudoku-cell:first-child {
+  border-left: 2px solid #333;
+}
+
+/* Thick Right Borders for block/edge columns (3, 6, 9) */
+.sudoku-cell:nth-child(3n) {
+  border-right-width: 2px;
+  border-right-color: #333;
+}
+
+/* Thick Bottom Borders for block/edge rows (3, 6, 9) */
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom-width: 2px;
+  border-bottom-color: #333;
+}
+
+/* Remove the thin borders where thick ones take over */
+/* This might not be strictly necessary but ensures clarity */
 .sudoku-cell:nth-child(3n) {
   border-right: 2px solid #333;
 }
-
-.sudoku-cell:last-child {
-  border-right: none;
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom: 2px solid #333;
 }
 
 .sudoku-cell.selected {
