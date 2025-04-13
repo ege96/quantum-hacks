@@ -207,18 +207,34 @@ class QuantumSudokuBoard:
         
         After removal, if a neighboring cell has only one possibility left, automatically collapse it.
         """
-        neighbors = self.get_neighbors(row, col)
-        for n_row, n_col in neighbors:
-            neighbor_cell = self.board[n_row][n_col]
-            # If neighbor is collapsed, skip updating.
-            if neighbor_cell.is_collapsed():
-                continue
-
-            # Remove each assigned candidate from the neighbor possibilities.
-            # Note: Even for a partial collapse the numbers are "reserved" by the user selection.
-            # Depending on design decisions, you could allow a more nuanced, probabilistic update.
-            for candidate in assigned_candidates:
+        # If single value (collapsed cell), enforce strict Sudoku rules
+        if len(assigned_candidates) == 1:
+            candidate = assigned_candidates[0]
+            neighbors = self.get_neighbors(row, col)
+            for n_row, n_col in neighbors:
+                neighbor_cell = self.board[n_row][n_col]
+                # Skip already collapsed cells
+                if neighbor_cell.fixed_value is not None:
+                    continue
+                
+                # Remove this candidate from neighbor's possibilities
                 neighbor_cell.remove_candidate(candidate)
+        else:
+            # For multi-value assignments, use probabilistic constraints
+            neighbors = self.get_neighbors(row, col)
+            for n_row, n_col in neighbors:
+                neighbor_cell = self.board[n_row][n_col]
+                # If neighbor is collapsed, skip updating
+                if neighbor_cell.is_collapsed():
+                    continue
+                
+                # Remove each assigned candidate from the neighbor possibilities
+                # This implements exclusive constraint strategy
+                for candidate in assigned_candidates:
+                    neighbor_cell.remove_candidate(candidate)
+        
+        # Add additional validation to ensure no invalid Sudoku state
+        self.validate_board_consistency()
 
     def get_neighbors(self, row: int, col: int) -> List[Tuple[int, int]]:
         """
@@ -242,6 +258,50 @@ class QuantumSudokuBoard:
                 if (i, j) != (row, col):
                     neighbors.add((i, j))
         return list(neighbors)
+
+    def validate_board_consistency(self):
+        """
+        Validate the entire board for any Sudoku rule violations.
+        Ensures that fixed/collapsed cells maintain valid Sudoku constraints across
+        rows, columns, and blocks.
+        
+        Raises:
+            ValueError: If any Sudoku rule is violated (duplicate values in row/column/block)
+        """
+        # Check all rows for duplicates
+        for i in range(BOARD_SIZE):
+            row_values = self.get_row_values(i)
+            if len(row_values) < len([cell for cell in self.board[i] if cell.fixed_value is not None]):
+                raise ValueError(f"Row {i} contains duplicate fixed values: {row_values}")
+                
+        # Check all columns for duplicates
+        for j in range(BOARD_SIZE):
+            col_values = self.get_column_values(j)
+            fixed_in_col = sum(1 for i in range(BOARD_SIZE) if self.board[i][j].fixed_value is not None)
+            if len(col_values) < fixed_in_col:
+                raise ValueError(f"Column {j} contains duplicate fixed values: {col_values}")
+                
+        # Check all 3x3 blocks for duplicates
+        for block_row in range(0, BOARD_SIZE, BLOCK_SIZE):
+            for block_col in range(0, BOARD_SIZE, BLOCK_SIZE):
+                # Get all fixed values in this block
+                block_values = set()
+                fixed_count = 0
+                for i in range(block_row, block_row + BLOCK_SIZE):
+                    for j in range(block_col, block_col + BLOCK_SIZE):
+                        if self.board[i][j].fixed_value is not None:
+                            block_values.add(self.board[i][j].fixed_value)
+                            fixed_count += 1
+                
+                if len(block_values) < fixed_count:
+                    raise ValueError(f"Block at ({block_row},{block_col}) contains duplicate fixed values: {block_values}")
+        
+        # Check for cells with no remaining valid candidates
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                cell = self.board[i][j]
+                if cell.fixed_value is None and not cell.possibilities:
+                    raise ValueError(f"Cell at ({i},{j}) has no valid candidates, making the puzzle unsolvable")
 
     def serialize_board(self) -> List[List[dict]]:
         """

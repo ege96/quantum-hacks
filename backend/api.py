@@ -107,11 +107,11 @@ def generate_random_sudoku(difficulty='medium'):
     
     # Determine how many cells to keep based on difficulty
     if difficulty == 'easy':
-        cells_to_keep = random.randint(35, 40)
+        cells_to_keep = random.randint(45, 50)
     elif difficulty == 'medium':
-        cells_to_keep = random.randint(25, 34)
+        cells_to_keep = random.randint(35, 40)
     else:  # hard
-        cells_to_keep = random.randint(17, 24)
+        cells_to_keep = random.randint(20, 35)
     
     # Calculate how many cells to remove
     cells_to_remove = 81 - cells_to_keep
@@ -157,6 +157,7 @@ def is_valid_placement(board, row, col, val):
             if board[r][c] == val:
                 return False
     
+    # All checks passed, valid placement
     return True
 
 # Store the board instance (could be replaced with a database or session-based approach)
