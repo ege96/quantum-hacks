@@ -1,0 +1,166 @@
+.sudoku-board {
+  display: grid;
+  grid-template-rows: repeat(9, 1fr);
+  width: 600px;
+  height: 600px;
+  /* Remove border from board - handle with cell borders */
+  border: none;
+  /* Remove box-shadow completely */
+  box-shadow: none;
+  background-color: #f5f5f5;
+  margin: 0 auto;
+  /* Remove box-sizing as it's not needed without board border */
+}
+
+.sudoku-row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+}
+
+.sudoku-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  font-family: 'Arial', sans-serif;
+  transition: background-color 0.2s;
+  user-select: none;
+  border: none; /* Start clean */
+
+  /* Default thin internal borders */
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Thick Top Border for the first row */
+.sudoku-row:first-child .sudoku-cell {
+  border-top: 2px solid #333;
+}
+
+/* Thick Left Border for the first column */
+.sudoku-cell:first-child {
+  border-left: 2px solid #333;
+}
+
+/* Thick Right Borders for block/edge columns (3, 6, 9) */
+.sudoku-cell:nth-child(3n) {
+  border-right-width: 2px;
+  border-right-color: #333;
+}
+
+/* Thick Bottom Borders for block/edge rows (3, 6, 9) */
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom-width: 2px;
+  border-bottom-color: #333;
+}
+
+/* Remove the thin borders where thick ones take over */
+/* This might not be strictly necessary but ensures clarity */
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #333;
+}
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom: 2px solid #333;
+}
+
+.sudoku-cell.selected {
+  background-color: #e3f2fd;
+}
+
+.sudoku-cell.fixed {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.fixed-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+}
+
+.possibilities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+}
+
+.possibility {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.possibility:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  /* Remove box-shadow from hover state */
+  box-shadow: none;
+}
+
+/* Add subtle background colors to blocks for visual grouping */
+.block-0-0, .block-0-2, .block-1-1, .block-2-0, .block-2-2 {
+  background-color: #f9f9f9;
+}
+
+/* Tooltip to show actual percentage on hover */
+.possibility::after {
+  content: attr(data-probability);
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 5px;
+  background-color: #333;
+  color: white;
+  border-radius: 3px;
+  font-size: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.possibility:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Positioning of numbers in the grid */
+.possibility:nth-child(1) { grid-area: 1 / 1 / 2 / 2; }
+.possibility:nth-child(2) { grid-area: 1 / 2 / 2 / 3; }
+.possibility:nth-child(3) { grid-area: 1 / 3 / 2 / 4; }
+.possibility:nth-child(4) { grid-area: 2 / 1 / 3 / 2; }
+.possibility:nth-child(5) { grid-area: 2 / 2 / 3 / 3; }
+.possibility:nth-child(6) { grid-area: 2 / 3 / 3 / 4; }
+.possibility:nth-child(7) { grid-area: 3 / 1 / 4 / 2; }
+.possibility:nth-child(8) { grid-area: 3 / 2 / 4 / 3; }
+.possibility:nth-child(9) { grid-area: 3 / 3 / 4 / 4; }
+
+/* Responsive adjustments */
+@media (max-width: 700px) {
+  .sudoku-board {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+  
+  .fixed-value {
+    font-size: 24px;
+  }
+  
+  .possibility {
+    font-size: 12px;
+  }
+} 
