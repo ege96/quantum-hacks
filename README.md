@@ -20,8 +20,7 @@ A quantum-inspired Sudoku game where cells can exist in superposition of multipl
 
 1. Install dependencies:
 ```bash
-cd backend
-pip install fastapi uvicorn pydantic
+pip install -r requirements.txt
 ```
 
 2. Start the server:
